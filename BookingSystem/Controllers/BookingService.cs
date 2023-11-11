@@ -1,58 +1,84 @@
 ﻿using BookingSystem.Data;
 using BookingSystem.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace BookingSystem.Controllers
 {
     public class BookingService
     {
         private readonly AppDbContext _dbContext;
+        private readonly IDistributedCache _distributedCache;
 
-        public BookingService(AppDbContext dbContext)
+        public BookingService(AppDbContext dbContext, IDistributedCache distributedCache)
         {
             _dbContext = dbContext;
+            _distributedCache = distributedCache;
         }
 
         public bool BookClass(int userId, int scheduleId)
         {
-            // Get the user and schedule from the database
-            var user = _dbContext.Users.Include(u => u.Bookings).FirstOrDefault(u => u.Id == userId);
-            var schedule = _dbContext.Schedules.FirstOrDefault(s => s.Id == scheduleId);
+            var cacheKey = $"Schedule_{scheduleId}";
 
-            if (user != null && schedule != null)
+            // Check if the schedule is in the distributed cache (indicating ongoing booking process)
+            if (_distributedCache.GetString(cacheKey) != null)
             {
-                // Check if the proposed booking conflicts with existing bookings
-                if (!HasBookingConflict(user, schedule))
-                {
-                    // Check if there are available slots for the class
-                    if (schedule.Bookings.Count < schedule.MaxCapacity)
-                    {
-                        // Create the booking
-                        var booking = new Booking
-                        {
-                            UserId = userId,
-                            ScheduleId = scheduleId,
-                            BookingTime = DateTime.UtcNow
-                        };
-
-                        // Add the booking to the user's bookings
-                        user.Bookings.Add(booking);
-
-                        // Add the booking to the schedule's bookings
-                        schedule.Bookings.Add(booking);
-
-                        // Save changes to the database
-                        _dbContext.SaveChanges();
-                        return true;
-                    }
-                    // Handle case where class is full
-                    // You may want to add logic for waitlist here
-                }
-                // Handle case where there is a booking conflict
-                // You may want to inform the user or handle it in some way
+                // Handle concurrent booking (return false, inform user, etc.)
+                return false;
             }
 
-            return false;
+            // Add the schedule to the distributed cache to indicate the start of the booking process
+            _distributedCache.SetString(cacheKey, "InProcess", new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10), // Set an expiration time to release the cache lock
+            });
+
+            try
+            {
+                // Your existing booking logic
+                var user = _dbContext.Users.Include(u => u.Bookings).FirstOrDefault(u => u.Id == userId);
+                var schedule = _dbContext.Schedules.FirstOrDefault(s => s.Id == scheduleId);
+
+                if (user != null && schedule != null)
+                {
+                    // Check if there is a booking conflict
+                    if (!HasBookingConflict(user, schedule))
+                    {
+                        // Check if there are available slots for the class
+                        if (schedule.Bookings.Count < schedule.MaxCapacity)
+                        {
+                            // Create the booking
+                            var booking = new Booking
+                            {
+                                UserId = userId,
+                                ScheduleId = scheduleId,
+                                BookingTime = DateTime.UtcNow
+                            };
+
+                            // Add the booking to the user's bookings
+                            user.Bookings.Add(booking);
+
+                            // Add the booking to the schedule's bookings
+                            schedule.Bookings.Add(booking);
+
+                            // Save changes to the database
+                            _dbContext.SaveChanges();
+                            return true;
+                        }
+                        // Handle case where class is full
+                        // You may want to add logic for waitlist here
+                    }
+                    // Handle case where there is a booking conflict
+                    // You may want to inform the user or handle it in some way
+                }
+
+                return false;
+            }
+            finally
+            {
+                // Remove the schedule from the distributed cache to release the lock
+                _distributedCache.Remove(cacheKey);
+            }
         }
 
         private bool HasBookingConflict(User user, Schedule schedule)
