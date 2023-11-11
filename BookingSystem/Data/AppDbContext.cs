@@ -29,6 +29,9 @@ public class AppDbContext : DbContext
             .WithMany(p => p.PurchasedPackages)
             .HasForeignKey(pp => pp.PackageId);
 
+        modelBuilder.Entity<Waitlist>()
+           .HasKey(w => w.UserId);
+
         // Add other configurations for your model relationships
 
         base.OnModelCreating(modelBuilder);

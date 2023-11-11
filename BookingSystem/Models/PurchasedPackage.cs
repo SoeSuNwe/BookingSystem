@@ -8,7 +8,9 @@
         public DateTime PurchaseDate { get; set; }
         public DateTime ExpirationDate { get; set; }
         public int Credits { get; set; }
-        public User User { get; set; }
-        public Package Package { get; set; }
+
+        // Navigation properties
+        public User User { get; set; } = new User();
+        public Package Package { get; set; } = new Package();
     }
 }
