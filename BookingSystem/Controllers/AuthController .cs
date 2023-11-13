@@ -28,7 +28,7 @@ namespace BookingSystem.Controllers
         public async Task<IActionResult> Login([FromBody] UserLoginRequest model)
         {
             // Perform basic authentication (you might want to customize this part based on your needs)
-            var user = await _userManager.FindByNameAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.Email.ToLowerInvariant());
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 return Unauthorized();

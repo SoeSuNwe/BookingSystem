@@ -6,7 +6,7 @@ using static BookingSystem.DTOs.UserDto;
 
 namespace BookingSystem.Controllers
 {
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
