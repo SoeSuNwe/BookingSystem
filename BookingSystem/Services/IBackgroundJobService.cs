@@ -1,4 +1,4 @@
-﻿namespace BookingSystem.Controllers
+﻿namespace BookingSystem.Services
 {
     public interface IBackgroundJobService
     {

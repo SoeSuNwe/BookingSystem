@@ -2,7 +2,7 @@
 using BookingSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace BookingSystem.Controllers
+namespace BookingSystem.Services
 {
     public interface IPackageService
     {

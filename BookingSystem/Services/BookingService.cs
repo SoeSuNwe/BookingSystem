@@ -3,7 +3,7 @@ using BookingSystem.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace BookingSystem.Controllers
+namespace BookingSystem.Services
 {
     public class BookingService
     {
@@ -16,7 +16,7 @@ namespace BookingSystem.Controllers
             _distributedCache = distributedCache;
         }
 
-        public bool BookClass(int userId, int scheduleId)
+        public bool BookClass(string userId, int scheduleId)
         {
             var cacheKey = $"Schedule_{scheduleId}";
 
@@ -130,7 +130,7 @@ namespace BookingSystem.Controllers
                             // Move the user from the waitlist to the booked list
                             user.Bookings.Add(new Booking
                             {
-                                UserId = waitlistUser.UserId,
+                                UserId = waitlistUser.UserId.ToString(),
                                 ScheduleId = booking.Schedule.Id,
                                 BookingTime = DateTime.UtcNow
                             });

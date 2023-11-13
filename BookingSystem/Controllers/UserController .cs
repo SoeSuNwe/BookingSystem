@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using BookingSystem.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static BookingSystem.DTOs.UserDto;
 
 namespace BookingSystem.Controllers
 {
+    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
@@ -43,7 +45,7 @@ namespace BookingSystem.Controllers
         public IActionResult PurchasePackage(int packageId)
         {
             var userId = GetUserIdFromClaims();
-            var success = _userService.PurchasePackage(userId, packageId);
+            var success = _userService.PurchasePackage(userId.ToString(), packageId);
 
             if (success)
                 return Ok("Package purchased successfully");
@@ -65,7 +67,7 @@ namespace BookingSystem.Controllers
         public IActionResult GetProfile()
         {
             var userId = GetUserIdFromClaims(); // A helper method to extract user ID from claims
-            var user = _userService.GetUserById(userId);
+            var user = _userService.GetUserById(userId.ToString());
 
             if (user == null)
                 return NotFound("User not found");
@@ -77,7 +79,7 @@ namespace BookingSystem.Controllers
         public IActionResult UpdateProfile([FromBody] UserProfileUpdateRequest request)
         {
             var userId = GetUserIdFromClaims();
-            _userService.UpdateUserProfile(userId, request.FirstName, request.LastName);
+            _userService.UpdateUserProfile(userId.ToString(), request.FirstName, request.LastName);
 
             return Ok("Profile updated successfully");
         }
@@ -85,7 +87,7 @@ namespace BookingSystem.Controllers
         public IActionResult ChangePassword([FromBody] ChangePasswordRequest request)
         {
             var userId = GetUserIdFromClaims();
-            var success = _userService.ChangePassword(userId, request.CurrentPassword, request.NewPassword);
+            var success = _userService.ChangePassword(userId.ToString(), request.CurrentPassword, request.NewPassword);
 
             if (success)
                 return Ok("Password changed successfully");

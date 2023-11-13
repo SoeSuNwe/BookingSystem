@@ -1,7 +1,7 @@
 ﻿using BookingSystem.Data;
 using BookingSystem.Models;
 
-namespace BookingSystem.Controllers
+namespace BookingSystem.Services
 {
     public interface IScheduleService
     {

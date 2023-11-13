@@ -1,10 +1,15 @@
-using BookingSystem.Controllers;
 using BookingSystem.Data;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Hangfire.MemoryStorage;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using BookingSystem.Models;
+using BookingSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,9 +25,29 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
-// or
-// services.AddDbContext<AppDbContext>(options =>
-//    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+// Configure Identity
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+// Configure JWT Authentication
+var key = Encoding.ASCII.GetBytes("your-secret-key"); // Replace with a secure key in a production environment
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
 
 // Configure Redis for caching
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -37,11 +62,9 @@ builder.Services.AddHangfire(config => config.UseMemoryStorage());
 // Add other services (authentication, swagger, etc.)
 
 
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<PackageService>();
-builder.Services.AddScoped<ScheduleService>();
-
-
+builder.Services.AddScoped<IUserService,UserService>();
+builder.Services.AddScoped<IPackageService,PackageService>();
+builder.Services.AddScoped<IScheduleService,ScheduleService>(); 
 
 var app = builder.Build();
 

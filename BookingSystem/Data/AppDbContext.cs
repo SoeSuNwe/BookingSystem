@@ -1,9 +1,10 @@
 ﻿using BookingSystem.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 namespace BookingSystem.Data;
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<User>
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { } 
 
     public DbSet<User> Users { get; set; }
     public DbSet<Package> Packages { get; set; }

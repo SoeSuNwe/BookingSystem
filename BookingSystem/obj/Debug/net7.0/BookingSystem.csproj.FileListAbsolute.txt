@@ -67,3 +67,4 @@ D:\ssn\BookingSystem\BookingSystem\obj\Debug\net7.0\refint\BookingSystem.dll
 D:\ssn\BookingSystem\BookingSystem\obj\Debug\net7.0\BookingSystem.pdb
 D:\ssn\BookingSystem\BookingSystem\obj\Debug\net7.0\BookingSystem.genruntimeconfig.cache
 D:\ssn\BookingSystem\BookingSystem\obj\Debug\net7.0\ref\BookingSystem.dll
+D:\ssn\BookingSystem\BookingSystem\bin\Debug\net7.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll

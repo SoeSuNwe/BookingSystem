@@ -7,19 +7,19 @@ using System.Text;
 using System.Net;
 using System.Net.Mail;
 
-namespace BookingSystem.Controllers
+namespace BookingSystem.Services
 {
     public interface IUserService
     {
         User RegisterUser(string email, string country);
         User AuthenticateUser(string email, string password);
         bool VerifyEmail(string email, string token);
-        User GetUserById(int userId);
-        void UpdateUserProfile(int userId, string firstName, string lastName);
+        User GetUserById(string userId);
+        void UpdateUserProfile(string userId, string firstName, string lastName);
         bool RequestPasswordReset(string email);
         bool ResetPassword(string email, string resetToken, string newPassword);
-        bool PurchasePackage(int userId, int packageId);
-        bool ChangePassword(int userId, string currentPassword, string newPassword);
+        bool PurchasePackage(string userId, int packageId);
+        bool ChangePassword(string userId, string currentPassword, string newPassword);
     }
     public class UserService : IUserService
     {
@@ -30,20 +30,20 @@ namespace BookingSystem.Controllers
         {
             _dbContext = dbContext;
         }
-        
+
         // Mock payment functions
-        public bool AddPaymentCard(int userId, string cardNumber, string expiryDate, string cvc)
+        public bool AddPaymentCard(string userId, string cardNumber, string expiryDate, string cvc)
         {
             // This is a mock function. In a real-world scenario, you'd integrate with a payment gateway.
             return true;
         }
 
-        public bool PaymentCharge(int userId, decimal amount)
+        public bool PaymentCharge(string userId, decimal amount)
         {
             // This is a mock function. In a real-world scenario, you'd integrate with a payment gateway.
             return true;
         }
-        public bool PurchasePackage(int userId, int packageId)
+        public bool PurchasePackage(string userId, int packageId)
         {
             // Get the user and package from the database
             var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
@@ -85,12 +85,12 @@ namespace BookingSystem.Controllers
             return false;
         }
 
-        public User GetUserById(int userId)
+        public User GetUserById(string userId)
         {
             return _dbContext.Users.FirstOrDefault(u => u.Id == userId);
         }
 
-        public void UpdateUserProfile(int userId, string firstName, string lastName)
+        public void UpdateUserProfile(string userId, string firstName, string lastName)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
 
@@ -108,8 +108,11 @@ namespace BookingSystem.Controllers
 
             var newUser = new User
             {
+                Id = Guid.NewGuid().ToString(),
                 Email = email,
                 Password = HashPassword(password),
+                FirstName="A",
+                LastName="Z", 
                 IsEmailVerified = false,
                 VerificationToken = GenerateVerificationToken() // Generate a unique token for email verification
                                                                 // Set other user-related properties
@@ -151,7 +154,7 @@ namespace BookingSystem.Controllers
 
             return user;
         }
-        public bool ChangePassword(int userId, string currentPassword, string newPassword)
+        public bool ChangePassword(string userId, string currentPassword, string newPassword)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.Id == userId && u.Password == HashPassword(currentPassword));
 
@@ -211,26 +214,26 @@ namespace BookingSystem.Controllers
 
         public static void SendVerifyEmail(string toEmail, string verificationToken)
         {
-            string subject = "Email Verification";
-            string body = $"Click the following link to verify your email: https://yourapp.com/verify-email?email={toEmail}&token={verificationToken}";
+            //string subject = "Email Verification";
+            //string body = $"Click the following link to verify your email: https://yourapp.com/verify-email?email={toEmail}&token={verificationToken}";
 
-            using (SmtpClient smtpClient = new SmtpClient("your-smtp-server.com"))
-            {
-                smtpClient.UseDefaultCredentials = false;
-                smtpClient.Credentials = new NetworkCredential("your-email@example.com", "your-email-password");
-                smtpClient.Port = 587; // or the port your SMTP server uses
-                smtpClient.EnableSsl = true;
+            //using (SmtpClient smtpClient = new SmtpClient("your-smtp-server.com"))
+            //{
+            //    smtpClient.UseDefaultCredentials = false;
+            //    smtpClient.Credentials = new NetworkCredential("your-email@example.com", "your-email-password");
+            //    smtpClient.Port = 587; // or the port your SMTP server uses
+            //    smtpClient.EnableSsl = true;
 
-                using (MailMessage mailMessage = new MailMessage())
-                {
-                    mailMessage.From = new MailAddress("your-email@example.com");
-                    mailMessage.To.Add(toEmail);
-                    mailMessage.Subject = subject;
-                    mailMessage.Body = body;
+            //    using (MailMessage mailMessage = new MailMessage())
+            //    {
+            //        mailMessage.From = new MailAddress("your-email@example.com");
+            //        mailMessage.To.Add(toEmail);
+            //        mailMessage.Subject = subject;
+            //        mailMessage.Body = body;
 
-                    smtpClient.Send(mailMessage);
-                }
-            }
+            //        smtpClient.Send(mailMessage);
+            //    }
+            //}
         }
         public void SendPasswordResetEmail(string toEmail, string resetToken)
         {

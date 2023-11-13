@@ -1,8 +1,8 @@
 ﻿using Hangfire;
 
-namespace BookingSystem.Controllers
+namespace BookingSystem.Services
 {
-    
+
     public class BackgroundJobService : IBackgroundJobService
     {
         public void ConfigureRecurringJobs()
