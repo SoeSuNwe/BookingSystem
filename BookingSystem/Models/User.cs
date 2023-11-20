@@ -2,13 +2,12 @@
 
 namespace BookingSystem.Models
 {
-    public class User:IdentityUser
+    public class User : IdentityUser
     {
-        public string Id { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public string Id { get; set; } 
+        public  string Password { get; set; }
         public bool IsEmailVerified { get; set; }
-        public string VerificationToken { get; set; }
+        public  string VerificationToken { get; set; }
         public string? ResetToken { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

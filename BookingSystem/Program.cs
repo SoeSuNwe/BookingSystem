@@ -12,6 +12,7 @@ using BookingSystem.Models;
 using BookingSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+ConfigurationManager configuration = builder.Configuration;
 
 // Add services to the container.
 
@@ -31,23 +32,29 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// Configure JWT Authentication
-var key = Encoding.ASCII.GetBytes("your-secret-key"); // Replace with a secure key in a production environment
+// Adding Authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
+// Adding Jwt Bearer
 .AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters()
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidAudience = configuration["JWT:ValidAudience"],
+        ValidIssuer = configuration["JWT:ValidIssuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Secret"]))
     };
 });
+
 
 // Configure Redis for caching
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -62,9 +69,9 @@ builder.Services.AddHangfire(config => config.UseMemoryStorage());
 // Add other services (authentication, swagger, etc.)
 
 
-builder.Services.AddScoped<IUserService,UserService>();
-builder.Services.AddScoped<IPackageService,PackageService>();
-builder.Services.AddScoped<IScheduleService,ScheduleService>(); 
+builder.Services.AddScoped<UserService, UserService>();
+builder.Services.AddScoped<IPackageService, PackageService>();
+builder.Services.AddScoped<IScheduleService, ScheduleService>();
 
 var app = builder.Build();
 
@@ -78,6 +85,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+app.UseAuthorization();
+
 // Configure Hangfire dashboard
 app.UseHangfireDashboard();
 // Configure Hangfire recurring jobs 

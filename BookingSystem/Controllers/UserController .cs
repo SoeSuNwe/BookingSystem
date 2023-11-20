@@ -13,34 +13,11 @@ namespace BookingSystem.Controllers
     {
         private readonly IUserService _userService;
 
-        public UserController(IUserService userService)
+        public UserController(UserService userService)
         {
             _userService = userService;
-        }
-
-        [HttpPost("register")]
-        public IActionResult Register([FromBody] UserRegistrationRequest request)
-        {
-            var newUser = _userService.RegisterUser(request.Email, request.Password);
-            return Ok(new { newUser.Id, newUser.Email, newUser.IsEmailVerified });
-        }
-
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] UserLoginRequest request)
-        {
-            var user = _userService.AuthenticateUser(request.Email, request.Password);
-
-            if (user == null)
-                return Unauthorized("Invalid credentials");
-
-            if (!user.IsEmailVerified)
-                return BadRequest("Email not verified");
-
-            // You may generate and return a JWT token for authenticated users
-
-            return Ok(new { user.Id, user.Email });
-        }
-
+        } 
+        
         [HttpPost("purchase-package/{packageId}")]
         public IActionResult PurchasePackage(int packageId)
         {
@@ -63,6 +40,7 @@ namespace BookingSystem.Controllers
 
             return BadRequest("Invalid email verification token");
         }
+
         [HttpGet("profile")]
         public IActionResult GetProfile()
         {
@@ -83,6 +61,7 @@ namespace BookingSystem.Controllers
 
             return Ok("Profile updated successfully");
         }
+
         [HttpPost("change-password")]
         public IActionResult ChangePassword([FromBody] ChangePasswordRequest request)
         {

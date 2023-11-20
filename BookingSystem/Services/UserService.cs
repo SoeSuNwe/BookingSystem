@@ -1,17 +1,13 @@
 ﻿using BookingSystem.Data;
-using BookingSystem.Models;
-using System.Net.Mail;
-using System.Net;
+using BookingSystem.Models; 
 using System.Security.Cryptography;
-using System.Text;
-using System.Net;
-using System.Net.Mail;
+using System.Text; 
 
 namespace BookingSystem.Services
 {
     public interface IUserService
     {
-        User RegisterUser(string email, string country);
+        
         User AuthenticateUser(string email, string password);
         bool VerifyEmail(string email, string token);
         User GetUserById(string userId);
@@ -113,7 +109,7 @@ namespace BookingSystem.Services
                 Password = HashPassword(password),
                 FirstName="A",
                 LastName="Z", 
-                IsEmailVerified = false,
+                IsEmailVerified = true,
                 VerificationToken = GenerateVerificationToken() // Generate a unique token for email verification
                                                                 // Set other user-related properties
             };
